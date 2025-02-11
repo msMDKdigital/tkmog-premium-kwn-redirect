@@ -1,8 +1,7 @@
 <?php
 /**
  * Plugin Name: TkmoG Premium KWN File Redirect
- * Description: Redirects https://www.zahleinfachperhandyrechnung.de/Nummern-für-Kurzwahldienste-TKG-$120-Liste
- * to the most recent version of Nummern-für-Kurzwahldienste-TKG-$120-[timestamp].xlsx
+ * Description: Redirects https://www.zahleinfachperhandyrechnung.de/Nummern-für-Kurzwahldienste-TKG-$120-Liste to the most recent version of Nummern-für-Kurzwahldienste-TKG-$120-[timestamp].xlsx
  *
  * Upload happens every 16th of the month.
  *
