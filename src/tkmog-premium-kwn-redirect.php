@@ -9,7 +9,7 @@
  * uploaded every day
  *
  *
- * Version: 1.0
+ * Version: 1.1
  * Author: MS@mdk.digital
  */
 
@@ -17,20 +17,60 @@ if (!defined('ABSPATH')) {
     exit; // Prevent direct access
 }
 
-function latest_file_redirect() {
-    // Get WordPress uploads directory
-    $upload_dir = wp_upload_dir();
-    $uploads_directory_absolute_path = $upload_dir['basedir'];
+// Define mappings of URL paths to directory(not the internal path) and filename patterns
+function get_url_to_pattern_mappings() {
+    return [
+        '/dev2/uploadtest' => [
+            'directory' => '',
+            'base_url' => '',
+            'filename_pattern' => 'testfileUpload-*.csv'
+        ],
+        '/Nummern-für-Kurzwahldienste-TKG-$120-Liste' => [
+            'directory' => '',
+            'base_url' => '',
+            'filename_pattern' => 'Nummern-für-Kurzwahldienste-TKG-$120*.xlsx'
+        ],
+        //'/another/url' => [
+        //    'directory' => '/custom-folder',
+        //    'base_url' => '',
+        //    'filename_pattern' => 'anotherFilePattern-*.txt'
+        //],
+        // More mappings can be added here
+    ];
+}
+
+function latest_file_redirect($directory, $base_url, $filename_pattern) {
+    if (!$directory || $directory === '') {
+        // Get WordPress uploads url as default
+        $upload_dir = wp_upload_dir();
+        // set directory to absolute path of uploads url
+        $directory = trailingslashit($upload_dir['basedir']);
+    }
+    if (!$base_url || $base_url === '') {
+        // Get WordPress uploads url as default
+        $upload_url = wp_upload_dir();
+        // set directory to absolute path of uploads url
+        $base_url = trailingslashit($upload_url['baseurl']);
+    }
+
+    //sanitize directory
+    // checks whether the directory exists and is inside uploads
+    $internalPath = realpath($directory);
+    if (!$internalPath || strpos($internalPath, wp_upload_dir()['basedir']) !== 0) {
+        wp_die("Invalid directory: $internalPath");
+    }
 
     // Define file pattern
-    $filename = "testfileUpload";
-    $pattern = $uploads_directory_absolute_path . "/" . $filename . "-*" . ".csv"; // Update to match your filename structure
+    $pattern = trailingslashit($directory) . $filename_pattern;
 
     // Get files matching the pattern
     $files = glob($pattern);
 
-    if (!$files) {
-        wp_die("No files found.");
+    // Trap for missing files
+    if (!$files  || !is_array($files)) {
+        wp_die("No files found for: $pattern");
+       // wp_safe_redirect(home_url('/404'), 404);
+        exit;
     }
 
     // Sort by modification time (newest first)
@@ -38,14 +78,21 @@ function latest_file_redirect() {
         return filemtime($b) - filemtime($a);
     });
 
+    // Redirect user to the latest file
     $latest_file = basename($files[0]);
-    wp_redirect($upload_dir['baseurl'] . "/" . $latest_file, 302);
+    wp_safe_redirect($base_url . "/" . $latest_file, 302);
     exit;
 }
 
 
-add_action('init', function() {
-    if (strpos($_SERVER['REQUEST_URI'], '/dev2/uploadtest') !== false) {
-        latest_file_redirect();
+// Hook into WordPress 'init' action
+add_action('init', function () {
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $mappings = get_url_to_pattern_mappings();
+
+    foreach ($mappings as $url_path => $params) {
+        if (parse_url($request_uri, PHP_URL_PATH) === $url_path) {
+            latest_file_redirect($params['directory'], $params['base_url'], $params['filename_pattern']);
+        }
     }
 });
