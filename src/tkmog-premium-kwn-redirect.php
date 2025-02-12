@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name: TkmoG Premium KWN File Redirect
- * Description: Redirects https://www.zahleinfachperhandyrechnung.de/Nummern-für-Kurzwahldienste-TKG-$120-Liste to the most recent version of Nummern-für-Kurzwahldienste-TKG-$120-[timestamp].xlsx
+ * Description: Redirects https://www.zahleinfachperhandyrechnung.de/Nummern-für-Kurzwahldienste-TKG-$120-Liste to the most recent version of Nummern-für-Kurzwahldienste-TKG-$120-[timestamp].csv
  *
  * Upload happens every 16th of the month.
  *
- * Testfile is available on https://www.zahleinfachperhandyrechnung.de/dev/uploadtest
+ * Testfile is available on https://www.zahleinfachperhandyrechnung.de/dev2/uploadtest
  * uploaded every day
  *
  *
- * Version: 1.1
+ * Version: 1.2
  * Author: MS@mdk.digital
  */
 
@@ -28,7 +28,7 @@ function get_url_to_pattern_mappings() {
         '/Nummern-für-Kurzwahldienste-TKG-$120-Liste' => [
             'directory' => '',
             'base_url' => '',
-            'filename_pattern' => 'Nummern-für-Kurzwahldienste-TKG-$120*.xlsx'
+            'filename_pattern' => 'Nummern-für-Kurzwahldienste-TKG-§120-*.csv'
         ],
         //'/another/url' => [
         //    'directory' => '/custom-folder',
@@ -57,7 +57,8 @@ function latest_file_redirect($directory, $base_url, $filename_pattern) {
     // checks whether the directory exists and is inside uploads
     $internalPath = realpath($directory);
     if (!$internalPath || strpos($internalPath, wp_upload_dir()['basedir']) !== 0) {
-        wp_die("Invalid directory: $internalPath");
+        error_log("Tkmog-Premium-KWN Plugin error: " . "Invalid directory: $internalPath"); // pattern
+        wp_die("Invalid directory.");
     }
 
     // Define file pattern
@@ -68,7 +69,11 @@ function latest_file_redirect($directory, $base_url, $filename_pattern) {
 
     // Trap for missing files
     if (!$files  || !is_array($files)) {
-        wp_die("No files found for: $pattern");
+        $upload_dir = wp_upload_dir();
+        error_log("Tkmog-Premium-KWN Plugin error: " . "Basedir: " . $upload_dir['basedir']); // Absolute path
+        error_log("Tkmog-Premium-KWN Plugin error: " . "Baseurl: " . $upload_dir['baseurl']); // Public URL
+        error_log("Tkmog-Premium-KWN Plugin error: " . "No files found for: $pattern"); // pattern
+        wp_die("No files found.");
        // wp_safe_redirect(home_url('/404'), 404);
         exit;
     }
@@ -87,7 +92,7 @@ function latest_file_redirect($directory, $base_url, $filename_pattern) {
 
 // Hook into WordPress 'init' action
 add_action('init', function () {
-    $request_uri = $_SERVER['REQUEST_URI'];
+    $request_uri = urldecode($_SERVER['REQUEST_URI']);
     $mappings = get_url_to_pattern_mappings();
 
     foreach ($mappings as $url_path => $params) {
