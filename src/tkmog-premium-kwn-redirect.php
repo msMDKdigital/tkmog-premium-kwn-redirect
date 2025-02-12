@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: TkmoG Premium KWN File Redirect
- * Description: Redirects https://www.zahleinfachperhandyrechnung.de/Nummern-für-Kurzwahldienste-TKG-$120-Liste to the most recent version of Nummern-für-Kurzwahldienste-TKG-$120-[timestamp].csv
+ * Description: Redirects https://www.zahleinfachperhandyrechnung.de/Nummern-für-Kurzwahldienste-TKG-§120-Liste to the most recent version of Nummern-für-Kurzwahldienste-TKG-§120-[timestamp].csv
  *
  * Upload happens every 16th of the month.
  *
@@ -9,7 +9,7 @@
  * uploaded every day
  *
  *
- * Version: 1.2
+ * Version: 1.21
  * Author: MS@mdk.digital
  */
 
@@ -25,7 +25,7 @@ function get_url_to_pattern_mappings() {
             'base_url' => '',
             'filename_pattern' => 'testfileUpload-*.csv'
         ],
-        '/Nummern-für-Kurzwahldienste-TKG-$120-Liste' => [
+        '/Nummern-für-Kurzwahldienste-TKG-§120-Liste' => [
             'directory' => '',
             'base_url' => '',
             'filename_pattern' => 'Nummern-für-Kurzwahldienste-TKG-§120-*.csv'
